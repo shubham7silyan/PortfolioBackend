@@ -1,8 +1,1 @@
-[phases.install]
-cmds = ["npm install --production"]
-
-[phases.build]
-cmds = ["echo 'Build complete'"]
-
-[start]
-cmd = "npm start"
+# Let Railway auto-detect Node.js configuration
