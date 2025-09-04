@@ -1,1 +1,7 @@
-# Let Railway auto-detect Node.js configuration
+# Railway Nixpacks Configuration - Working Version
+
+[phases.install]
+cmds = ["npm install --production"]
+
+[start]
+cmd = "npm start"

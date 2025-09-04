@@ -6,6 +6,10 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
   "dependencies": {
     "aws-sdk": "^2.1691.0",
     "bcryptjs": "^2.4.3",
@@ -44,12 +48,15 @@
     "https": "node https-server.js",
     "ssl:generate": "node generate-ssl.js",
     "ssl:quick": "node generate-ssl.js --quick",
-    "start": "node https-server.js",
+    "start": "node index.js",
     "cluster": "pm2 start ecosystem.config.js",
     "start:cluster": "node cluster.js",
     "start:prod": "NODE_ENV=production pm2 start ecosystem.config.js",
     "http": "node index.js",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "install:prod": "npm install --production --no-package-lock",
+    "build": "echo 'Build completed'",
+    "postinstall": "echo 'Dependencies installed successfully'"
   }
 }

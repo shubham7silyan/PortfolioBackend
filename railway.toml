@@ -1,1 +1,10 @@
-# Removed - using Railway defaults
+# Railway configuration file for deployment settings
+
+[build]
+builder = "nixpacks"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 100
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10
