@@ -31,11 +31,11 @@ MONGODB_USERNAME=portfolioApp
 MONGODB_PASSWORD=your_secure_password
 
 # Email
-GMAIL_USER=your_email@gmail.com
-GMAIL_APP_PASSWORD=your_app_password
+GMAIL_USER=shubham7silyan@gmail.com
+GMAIL_APP_PASSWORD=rcze dcyk agyp xvuf
 
 # JWT Secrets (32+ characters)
-JWT_ACCESS_SECRET=your_jwt_access_secret_32_chars_min
+JWT_ACCESS_SECRET=7f1bba82d02a7c2bb7b839e7c6eebed3bff4739dd8b2ceaf9d29a21213fd3d6a7b2b4cce7ad86e5ac345f3b0c2dd054c38ef9cb0a3aa7d3e
 JWT_REFRESH_SECRET=your_jwt_refresh_secret_32_chars_min
 
 # Admin Credentials
