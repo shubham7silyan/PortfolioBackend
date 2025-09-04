@@ -71,7 +71,8 @@ const corsOptions = {
         const allowedOrigins = [
             process.env.FRONTEND_URL || 'http://localhost:3000',
             'http://localhost:3000',
-            'http://127.0.0.1:3000'
+            'http://127.0.0.1:3000',
+            'https://portfoliofrontend-production-3d82.up.railway.app'
         ];
 
         // Allow requests with no origin (mobile apps, etc.)
