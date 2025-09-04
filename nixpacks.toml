@@ -1,7 +1,10 @@
-# Railway Nixpacks Configuration - Working Version
+# Railway Nixpacks Configuration - Fixed for Docker BuildKit cache issues
 
 [phases.install]
-cmds = ["npm install --production"]
+cmds = [
+    "npm cache clean --force",
+    "npm install --production --no-package-lock"
+]
 
 [start]
 cmd = "npm start"
