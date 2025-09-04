@@ -1,17 +1,17 @@
-const express = require("express");
-const https = require("https");
-const http = require("http");
-const fs = require("fs");
-const path = require("path");
-const { SSLManager } = require("./config/ssl-setup");
-const { HTTP2Server } = require("./config/http2-server");
+const express = require('express');
+const https = require('https');
+const http = require('http');
+const fs = require('fs');
+const { SSLManager } = require('./config/ssl-setup');
+const { HTTP2Server } = require('./config/http2-server');
+const { validateEmail } = require('./utils/validation');
 
 // Import your existing app configuration
-const mongoose = require("mongoose");
-const cors = require("cors");
-const { validationResult } = require("express-validator");
-const bcrypt = require("bcryptjs");
-require("dotenv").config();
+const mongoose = require('mongoose');
+const cors = require('cors');
+const { validationResult } = require('express-validator');
+const bcrypt = require('bcryptjs');
+require('dotenv').config();
 
 // Import all your existing middleware
 const {
@@ -23,14 +23,14 @@ const {
     requestLogger,
     sanitizeInputs,
     securityErrorHandler
-} = require("./middleware/security");
+} = require('./middleware/security');
 
 const {
     contactValidationRules,
     sanitizeInput,
     detectSuspiciousContent,
     detectRateLimitBypass
-} = require("./utils/validation");
+} = require('./utils/validation');
 
 const {
     RefreshToken,
@@ -41,28 +41,28 @@ const {
     securityAlertSystem,
     ipBlockingMiddleware,
     logSecurityEvent
-} = require("./middleware/logging");
+} = require('./middleware/logging');
 
-const { PasswordManager } = require("./middleware/auth");
+const { PasswordManager } = require('./middleware/auth');
 
 const {
     Role,
     RBACManager,
     UserRateLimit
-} = require("./middleware/rbac");
+} = require('./middleware/rbac');
 
 const {
     GeoSecurityManager,
     RequestSigner,
     TokenRateLimiter,
     SessionSecurityManager
-} = require("./middleware/geo-security");
+} = require('./middleware/geo-security');
 
 const {
     ImmutableLogger,
     OffSiteLogger,
     EnhancedSecurityLogger
-} = require("./middleware/immutable-logging");
+} = require('./middleware/immutable-logging');
 
 const {
     cacheManager,
@@ -70,7 +70,7 @@ const {
     asyncQueue,
     QueryOptimizer,
     compression
-} = require("./middleware/performance");
+} = require('./middleware/performance');
 
 class SecurePortfolioServer {
     constructor() {
@@ -79,7 +79,7 @@ class SecurePortfolioServer {
         this.PORT = process.env.PORT || 5050;
         this.HTTPS_PORT = process.env.HTTPS_PORT || 443;
         this.HTTP_PORT = process.env.HTTP_PORT || 80;
-        
+
         this.setupMiddleware();
         this.setupRoutes();
     }
@@ -99,12 +99,12 @@ class SecurePortfolioServer {
         this.app.use(securityHeaders);
         this.app.use(ipBlockingMiddleware);
         this.app.use(generalLimiter);
-        this.app.use("/contact", contactLimiter);
-        this.app.use("/admin", adminLimiter);
-        this.app.use("/admin", this.geoSecurity.geoRestrictMiddleware.bind(this.geoSecurity));
+        this.app.use('/contact', contactLimiter);
+        this.app.use('/admin', adminLimiter);
+        this.app.use('/admin', this.geoSecurity.geoRestrictMiddleware.bind(this.geoSecurity));
         this.app.use(requestLogger);
-        this.app.use(express.json({ limit: "1mb" }));
-        this.app.use(express.urlencoded({ extended: true, limit: "1mb" }));
+        this.app.use(express.json({ limit: '1mb' }));
+        this.app.use(express.urlencoded({ extended: true, limit: '1mb' }));
         this.app.use(sanitizeInputs);
         this.app.use(cors(corsOptions));
 
@@ -114,7 +114,7 @@ class SecurePortfolioServer {
 
     setupRoutes() {
         // Import database security configuration
-        const { DatabaseSecurity } = require("./config/database");
+        const { DatabaseSecurity } = require('./config/database');
         DatabaseSecurity.connectSecurely();
         RBACManager.initializeRoles();
 
@@ -127,7 +127,7 @@ class SecurePortfolioServer {
             createdAt: { type: Date, default: Date.now }
         }, { versionKey: false });
 
-        const UserModel = mongoose.model("formdata", SchemaName);
+        const UserModel = mongoose.model('formdata', SchemaName);
 
         // All your existing routes with HTTPS security headers
         this.setupContactRoute(UserModel);
@@ -137,7 +137,7 @@ class SecurePortfolioServer {
     }
 
     setupContactRoute(UserModel) {
-        this.app.post("/contact", contactValidationRules, async (req, res) => {
+        this.app.post('/contact', contactValidationRules, async (req, res) => {
             try {
                 // Add HTTPS security headers
                 res.set({
@@ -149,7 +149,7 @@ class SecurePortfolioServer {
 
                 const bypassCheck = detectRateLimitBypass(req);
                 if (bypassCheck.suspicious) {
-                    console.log("🚨 Rate limit bypass attempt detected:", {
+                    console.log('🚨 Rate limit bypass attempt detected:', {
                         ip: req.ip,
                         forwardedIPs: bypassCheck.forwardedIPs,
                         userAgent: req.get('User-Agent')
@@ -163,7 +163,7 @@ class SecurePortfolioServer {
                         data: req.body
                     });
                     return res.status(400).json({
-                        message: "Invalid input data",
+                        message: 'Invalid input data',
                         success: false,
                         errors: errors.array()
                     });
@@ -174,7 +174,7 @@ class SecurePortfolioServer {
 
                 const emailCheck = validateEmail(Email);
                 if (!emailCheck.valid) {
-                    console.log("🚨 Invalid email detected:", {
+                    console.log('🚨 Invalid email detected:', {
                         ip: req.ip,
                         email: Email,
                         reason: emailCheck.reason
@@ -192,15 +192,15 @@ class SecurePortfolioServer {
                         data: sanitizedData
                     });
                     return res.status(400).json({
-                        message: "Invalid content detected",
+                        message: 'Invalid content detected',
                         success: false
                     });
                 }
 
                 if (!FirstName || !LastName || !Email || !Message) {
-                    return res.status(400).json({ 
-                        message: "All fields are required after sanitization",
-                        success: false 
+                    return res.status(400).json({
+                        message: 'All fields are required after sanitization',
+                        success: false
                     });
                 }
 
@@ -208,28 +208,28 @@ class SecurePortfolioServer {
                 await newEntry.save();
                 console.log(`✅ Secure data saved - IP: ${req.ip}, Email: ${Email}`);
 
-                res.status(200).json({ 
-                    message: "Message sent successfully! I'll get back to you soon.",
-                    success: true 
+                res.status(200).json({
+                    message: 'Message sent successfully! I\'ll get back to you soon.',
+                    success: true
                 });
 
             } catch (error) {
-                console.error("❌ Security-enhanced error:", {
+                console.error('❌ Security-enhanced error:', {
                     error: error.message,
                     ip: req.ip,
                     userAgent: req.get('User-Agent'),
                     timestamp: new Date().toISOString()
                 });
-                
+
                 if (error.name === 'ValidationError') {
-                    res.status(400).json({ 
-                        message: "Invalid data provided",
-                        success: false 
+                    res.status(400).json({
+                        message: 'Invalid data provided',
+                        success: false
                     });
                 } else {
-                    res.status(500).json({ 
-                        message: "Something went wrong. Please try again later.",
-                        success: false 
+                    res.status(500).json({
+                        message: 'Something went wrong. Please try again later.',
+                        success: false
                     });
                 }
             }
@@ -238,31 +238,31 @@ class SecurePortfolioServer {
 
     setupAdminRoutes(UserModel) {
         // Admin login with HTTPS security
-        this.app.post("/admin/login", async (req, res) => {
+        this.app.post('/admin/login', async (req, res) => {
             try {
                 res.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
-                
+
                 const { username, password } = req.body;
-                
+
                 if (!username || !password) {
                     await logSecurityEvent('LOGIN_FAILED', req, { reason: 'Missing credentials' });
                     return res.status(400).json({
-                        message: "Username and password required",
+                        message: 'Username and password required',
                         success: false
                     });
                 }
 
                 let adminUser = await AdminUser.findOne({ username });
-                
+
                 if (!adminUser) {
                     const defaultPassword = process.env.ADMIN_PASSWORD;
                     if (!defaultPassword) {
                         return res.status(500).json({
-                            message: "Admin account not configured",
+                            message: 'Admin account not configured',
                             success: false
                         });
                     }
-                    
+
                     const hashedPassword = await PasswordManager.hashPassword(defaultPassword);
                     adminUser = new AdminUser({
                         username: 'admin',
@@ -272,40 +272,40 @@ class SecurePortfolioServer {
                 }
 
                 if (adminUser.isLocked) {
-                    await logSecurityEvent('LOGIN_FAILED', req, { 
+                    await logSecurityEvent('LOGIN_FAILED', req, {
                         reason: 'Account locked',
-                        lockoutUntil: adminUser.lockoutUntil 
+                        lockoutUntil: adminUser.lockoutUntil
                     });
                     return res.status(423).json({
-                        message: "Account temporarily locked due to failed attempts",
+                        message: 'Account temporarily locked due to failed attempts',
                         success: false,
                         lockoutUntil: adminUser.lockoutUntil
                     });
                 }
 
                 const isValidPassword = await PasswordManager.comparePassword(password, adminUser.passwordHash);
-                
+
                 if (!isValidPassword) {
                     await adminUser.incLoginAttempts();
-                    await logSecurityEvent('LOGIN_FAILED', req, { 
+                    await logSecurityEvent('LOGIN_FAILED', req, {
                         reason: 'Invalid password',
-                        attempts: adminUser.failedLoginAttempts + 1 
+                        attempts: adminUser.failedLoginAttempts + 1
                     });
-                    
+
                     return res.status(401).json({
-                        message: "Invalid credentials",
+                        message: 'Invalid credentials',
                         success: false
                     });
                 }
 
                 await adminUser.resetLoginAttempts();
 
-                const payload = { 
-                    role: 'admin', 
+                const payload = {
+                    role: 'admin',
                     userId: adminUser._id.toString(),
-                    username: adminUser.username 
+                    username: adminUser.username
                 };
-                
+
                 const { accessToken, refreshToken } = TokenManager.generateTokens(payload);
                 await TokenManager.storeRefreshToken(refreshToken, adminUser._id.toString());
 
@@ -319,7 +319,7 @@ class SecurePortfolioServer {
                 const sessionId = await SessionSecurityManager.trackSession(adminUser, req);
 
                 res.status(200).json({
-                    message: "Login successful",
+                    message: 'Login successful',
                     success: true,
                     accessToken,
                     refreshToken,
@@ -333,32 +333,32 @@ class SecurePortfolioServer {
                     ip: req.ip,
                     timestamp: new Date().toISOString()
                 });
-                
+
                 res.status(500).json({
-                    message: "Login failed",
+                    message: 'Login failed',
                     success: false
                 });
             }
         });
 
         // All other admin routes with HTTPS headers
-        this.app.get("/admin/contacts", 
-            authenticateToken, 
+        this.app.get('/admin/contacts',
+            authenticateToken,
             RBACManager.requirePermission('contacts', 'read'),
             this.tokenRateLimiter.middleware(30, 15 * 60 * 1000),
             cacheManager.cacheMiddleware(60),
             async (req, res) => {
                 res.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
-                
+
                 try {
                     const page = parseInt(req.query.page) || 1;
                     const limit = parseInt(req.query.limit) || 20;
-                    
+
                     const [contacts, totalCount] = await Promise.all([
                         QueryOptimizer.optimizeContactQueries().getContacts(page, limit),
                         QueryOptimizer.optimizeContactQueries().getContactCount()
                     ]);
-                    
+
                     asyncQueue.queueLog({
                         level: 'info',
                         message: 'Admin accessed contacts via HTTPS',
@@ -371,42 +371,42 @@ class SecurePortfolioServer {
                             secure: req.secure
                         }
                     });
-                    
-                    res.status(200).json({ 
-                        success: true, 
+
+                    res.status(200).json({
+                        success: true,
                         count: contacts.length,
                         totalCount,
                         page,
                         totalPages: Math.ceil(totalCount / limit),
-                        data: contacts 
+                        data: contacts
                     });
                 } catch (error) {
-                    console.error("❌ Error fetching contacts:", error);
-                    res.status(500).json({ 
-                        message: "Error fetching contacts",
-                        success: false 
+                    console.error('❌ Error fetching contacts:', error);
+                    res.status(500).json({
+                        message: 'Error fetching contacts',
+                        success: false
                     });
                 }
             }
         );
 
         // Delete route with HMAC signing
-        this.app.delete("/admin/contacts/:id", 
+        this.app.delete('/admin/contacts/:id',
             this.requestSigner.verifySignature.bind(this.requestSigner),
-            authenticateToken, 
+            authenticateToken,
             RBACManager.requirePermission('contacts', 'delete'),
             async (req, res) => {
                 res.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
-                
+
                 try {
                     const contact = await UserModel.findByIdAndDelete(req.params.id);
                     if (!contact) {
-                        return res.status(404).json({ 
-                            message: "Contact not found",
-                            success: false 
+                        return res.status(404).json({
+                            message: 'Contact not found',
+                            success: false
                         });
                     }
-                    
+
                     asyncQueue.queueLog({
                         level: 'warn',
                         message: 'Contact deleted via HTTPS',
@@ -418,18 +418,18 @@ class SecurePortfolioServer {
                             secure: req.secure
                         }
                     });
-                    
+
                     await cacheManager.del('GET:/admin/contacts:*');
 
-                    res.status(200).json({ 
-                        message: "Contact deleted successfully",
-                        success: true 
+                    res.status(200).json({
+                        message: 'Contact deleted successfully',
+                        success: true
                     });
                 } catch (error) {
-                    console.error("❌ Error deleting contact:", error);
-                    res.status(500).json({ 
-                        message: "Error deleting contact",
-                        success: false 
+                    console.error('❌ Error deleting contact:', error);
+                    res.status(500).json({
+                        message: 'Error deleting contact',
+                        success: false
                     });
                 }
             }
@@ -438,25 +438,25 @@ class SecurePortfolioServer {
 
     setupSystemRoutes() {
         // System status with SSL information
-        this.app.get("/admin/system/status",
+        this.app.get('/admin/system/status',
             authenticateToken,
             RBACManager.requirePermission('system', 'read'),
             cacheManager.cacheMiddleware(30),
             async (req, res) => {
                 res.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
-                
+
                 try {
                     const [integrity, activeUsers, sessionCount] = await Promise.all([
                         this.enhancedLogger.verifyLogIntegrity(),
                         AdminUser.countDocuments({ isActive: true }),
                         AdminUser.aggregate([
-                            { $unwind: "$activeSessions" },
-                            { $count: "total" }
+                            { $unwind: '$activeSessions' },
+                            { $count: 'total' }
                         ])
                     ]);
-                    
+
                     const sslPaths = this.sslManager.getCertificatePaths();
-                    
+
                     res.status(200).json({
                         success: true,
                         system: {
@@ -477,7 +477,7 @@ class SecurePortfolioServer {
                     });
                 } catch (error) {
                     res.status(500).json({
-                        message: "System status unavailable",
+                        message: 'System status unavailable',
                         success: false
                     });
                 }
@@ -485,9 +485,9 @@ class SecurePortfolioServer {
         );
 
         // Health check with SSL status
-        this.app.get("/health", (req, res) => {
-            res.status(200).json({ 
-                status: "OK", 
+        this.app.get('/health', (req, res) => {
+            res.status(200).json({
+                status: 'OK',
                 timestamp: new Date().toISOString(),
                 uptime: process.uptime(),
                 secure: req.secure,
@@ -502,7 +502,7 @@ class SecurePortfolioServer {
         this.app.use('*', (req, res) => {
             console.log(`🚨 404 attempt - IP: ${req.ip}, Path: ${req.originalUrl}, Secure: ${req.secure}`);
             res.status(404).json({
-                message: "Endpoint not found",
+                message: 'Endpoint not found',
                 success: false
             });
         });
@@ -518,12 +518,12 @@ class SecurePortfolioServer {
 
     async initializeSSL() {
         console.log('🔐 Initializing SSL certificates...');
-        
+
         const sslPaths = this.sslManager.getCertificatePaths();
-        
+
         if (!sslPaths.exists) {
             console.log('📝 SSL certificates not found, generating...');
-            
+
             if (process.env.NODE_ENV === 'production' && process.env.DOMAIN && process.env.ADMIN_EMAIL) {
                 // Try Let's Encrypt for production
                 const success = await this.sslManager.setupLetsEncrypt(process.env.DOMAIN, process.env.ADMIN_EMAIL);
@@ -538,7 +538,7 @@ class SecurePortfolioServer {
             console.log('✅ SSL certificates found');
             this.sslManager.verifyCertificate();
         }
-        
+
         return this.sslManager.getCertificatePaths();
     }
 
@@ -546,7 +546,7 @@ class SecurePortfolioServer {
         try {
             // Initialize SSL certificates
             const sslPaths = await this.initializeSSL();
-            
+
             if (sslPaths.exists) {
                 // Create HTTPS server with HTTP/2 support
                 const httpsOptions = {
@@ -556,19 +556,19 @@ class SecurePortfolioServer {
 
                 // Try HTTP/2 first, fallback to HTTPS
                 const http2Server = HTTP2Server.createSecureServer(this.app);
-                
+
                 if (http2Server) {
                     http2Server.listen(this.HTTPS_PORT, () => {
                         console.log(`🚀 HTTP/2 Secure server running on https://localhost:${this.HTTPS_PORT}`);
-                        console.log(`🛡️ SSL/TLS encryption: ✅`);
-                        console.log(`⚡ HTTP/2 with server push: ✅`);
+                        console.log('🛡️ SSL/TLS encryption: ✅');
+                        console.log('⚡ HTTP/2 with server push: ✅');
                     });
                 } else {
                     // Fallback to HTTPS
                     const httpsServer = https.createServer(httpsOptions, this.app);
                     httpsServer.listen(this.HTTPS_PORT, () => {
                         console.log(`🚀 HTTPS server running on https://localhost:${this.HTTPS_PORT}`);
-                        console.log(`🛡️ SSL/TLS encryption: ✅`);
+                        console.log('🛡️ SSL/TLS encryption: ✅');
                     });
                 }
 
@@ -579,7 +579,7 @@ class SecurePortfolioServer {
                     httpApp.get('*', (req, res) => {
                         res.redirect(301, `https://${req.headers.host}${req.url}`);
                     });
-                    
+
                     http.createServer(httpApp).listen(this.HTTP_PORT, () => {
                         console.log(`🔄 HTTP redirect server running on port ${this.HTTP_PORT}`);
                     });
@@ -593,17 +593,17 @@ class SecurePortfolioServer {
             }
 
             // Display security status
-            console.log(`🛡️ Security features enabled:`);
-            console.log(`   - Rate limiting: ✅`);
-            console.log(`   - Input validation: ✅`);
-            console.log(`   - XSS protection: ✅`);
-            console.log(`   - CORS security: ✅`);
-            console.log(`   - JWT authentication: ✅`);
-            console.log(`   - Request logging: ✅`);
-            console.log(`   - RBAC permissions: ✅`);
-            console.log(`   - Geo-IP restrictions: ✅`);
+            console.log('🛡️ Security features enabled:');
+            console.log('   - Rate limiting: ✅');
+            console.log('   - Input validation: ✅');
+            console.log('   - XSS protection: ✅');
+            console.log('   - CORS security: ✅');
+            console.log('   - JWT authentication: ✅');
+            console.log('   - Request logging: ✅');
+            console.log('   - RBAC permissions: ✅');
+            console.log('   - Geo-IP restrictions: ✅');
             console.log(`   - HTTPS/SSL: ${sslPaths.exists ? '✅' : '⚠️'}`);
-            
+
         } catch (error) {
             console.error('❌ Failed to start server:', error);
             process.exit(1);

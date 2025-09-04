@@ -21,7 +21,7 @@ class HTTP2Server {
             };
 
             const server = http2.createSecureServer(options, app);
-            
+
             // Server push for critical resources
             server.on('stream', (stream, headers) => {
                 if (headers[':path'] === '/') {

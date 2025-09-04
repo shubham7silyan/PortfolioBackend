@@ -50,7 +50,7 @@ class SEOOptimizer {
     generateSitemap(host) {
         const baseUrl = `https://${host}`;
         const currentDate = new Date().toISOString().split('T')[0];
-        
+
         return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -102,7 +102,7 @@ class SEOOptimizer {
 
     generateRobots(host) {
         const baseUrl = `https://${host}`;
-        
+
         return `# Robots.txt for ${host}
 User-agent: *
 Allow: /
@@ -130,87 +130,87 @@ Allow: /logo512.png`;
 
     generateStructuredData(host) {
         const baseUrl = `https://${host}`;
-        
+
         return {
-            "@context": "https://schema.org",
-            "@graph": [
+            '@context': 'https://schema.org',
+            '@graph': [
                 {
-                    "@type": "Person",
-                    "@id": `${baseUrl}/#person`,
-                    "name": "Shubham Silyan",
-                    "jobTitle": "Full Stack Developer",
-                    "description": "Passionate Full Stack Developer specializing in React.js, Node.js, and MongoDB",
-                    "url": baseUrl,
-                    "email": "shubham7silyan@gmail.com",
-                    "address": {
-                        "@type": "PostalAddress",
-                        "addressLocality": "Amritsar",
-                        "addressRegion": "Punjab",
-                        "addressCountry": "India"
+                    '@type': 'Person',
+                    '@id': `${baseUrl}/#person`,
+                    'name': 'Shubham Silyan',
+                    'jobTitle': 'Full Stack Developer',
+                    'description': 'Passionate Full Stack Developer specializing in React.js, Node.js, and MongoDB',
+                    'url': baseUrl,
+                    'email': 'shubham7silyan@gmail.com',
+                    'address': {
+                        '@type': 'PostalAddress',
+                        'addressLocality': 'Amritsar',
+                        'addressRegion': 'Punjab',
+                        'addressCountry': 'India'
                     },
-                    "knowsAbout": [
-                        "React.js", "Node.js", "MongoDB", "JavaScript", 
-                        "HTML5", "CSS3", "Express.js", "Full Stack Development"
+                    'knowsAbout': [
+                        'React.js', 'Node.js', 'MongoDB', 'JavaScript',
+                        'HTML5', 'CSS3', 'Express.js', 'Full Stack Development'
                     ],
-                    "sameAs": [
-                        "https://github.com/shubhamsilyan",
-                        "https://linkedin.com/in/shubhamsilyan",
-                        "https://twitter.com/shubhamsilyan"
+                    'sameAs': [
+                        'https://github.com/shubhamsilyan',
+                        'https://linkedin.com/in/shubhamsilyan',
+                        'https://twitter.com/shubhamsilyan'
                     ]
                 },
                 {
-                    "@type": "WebSite",
-                    "@id": `${baseUrl}/#website`,
-                    "url": baseUrl,
-                    "name": "Shubham Silyan Portfolio",
-                    "description": "Professional portfolio showcasing full stack development projects and skills",
-                    "publisher": {
-                        "@id": `${baseUrl}/#person`
+                    '@type': 'WebSite',
+                    '@id': `${baseUrl}/#website`,
+                    'url': baseUrl,
+                    'name': 'Shubham Silyan Portfolio',
+                    'description': 'Professional portfolio showcasing full stack development projects and skills',
+                    'publisher': {
+                        '@id': `${baseUrl}/#person`
                     },
-                    "potentialAction": {
-                        "@type": "SearchAction",
-                        "target": `${baseUrl}/#projects-section`,
-                        "query-input": "required name=search_term_string"
+                    'potentialAction': {
+                        '@type': 'SearchAction',
+                        'target': `${baseUrl}/#projects-section`,
+                        'query-input': 'required name=search_term_string'
                     }
                 },
                 {
-                    "@type": "WebPage",
-                    "@id": `${baseUrl}/#webpage`,
-                    "url": baseUrl,
-                    "name": "Shubham Silyan - Full Stack Developer",
-                    "isPartOf": {
-                        "@id": `${baseUrl}/#website`
+                    '@type': 'WebPage',
+                    '@id': `${baseUrl}/#webpage`,
+                    'url': baseUrl,
+                    'name': 'Shubham Silyan - Full Stack Developer',
+                    'isPartOf': {
+                        '@id': `${baseUrl}/#website`
                     },
-                    "about": {
-                        "@id": `${baseUrl}/#person`
+                    'about': {
+                        '@id': `${baseUrl}/#person`
                     },
-                    "description": "Professional portfolio of Shubham Silyan, a passionate full stack developer from Amritsar, Punjab",
-                    "breadcrumb": {
-                        "@type": "BreadcrumbList",
-                        "itemListElement": [
+                    'description': 'Professional portfolio of Shubham Silyan, a passionate full stack developer from Amritsar, Punjab',
+                    'breadcrumb': {
+                        '@type': 'BreadcrumbList',
+                        'itemListElement': [
                             {
-                                "@type": "ListItem",
-                                "position": 1,
-                                "name": "Home",
-                                "item": baseUrl
+                                '@type': 'ListItem',
+                                'position': 1,
+                                'name': 'Home',
+                                'item': baseUrl
                             },
                             {
-                                "@type": "ListItem",
-                                "position": 2,
-                                "name": "About",
-                                "item": `${baseUrl}/#about-section`
+                                '@type': 'ListItem',
+                                'position': 2,
+                                'name': 'About',
+                                'item': `${baseUrl}/#about-section`
                             },
                             {
-                                "@type": "ListItem",
-                                "position": 3,
-                                "name": "Projects",
-                                "item": `${baseUrl}/#projects-section`
+                                '@type': 'ListItem',
+                                'position': 3,
+                                'name': 'Projects',
+                                'item': `${baseUrl}/#projects-section`
                             },
                             {
-                                "@type": "ListItem",
-                                "position": 4,
-                                "name": "Contact",
-                                "item": `${baseUrl}/#contact-section`
+                                '@type': 'ListItem',
+                                'position': 4,
+                                'name': 'Contact',
+                                'item': `${baseUrl}/#contact-section`
                             }
                         ]
                     }

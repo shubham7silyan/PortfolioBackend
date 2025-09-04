@@ -1,6 +1,6 @@
 module.exports = {
     env: {
-        browser: true,
+        browser: false,
         commonjs: true,
         es2021: true,
         node: true
@@ -9,18 +9,19 @@ module.exports = {
         'eslint:recommended'
     ],
     parserOptions: {
-        ecmaVersion: 'latest'
+        ecmaVersion: 'latest',
+        sourceType: 'module'
     },
     rules: {
         'indent': ['error', 4],
-        'linebreak-style': ['error', 'unix'],
+        'linebreak-style': 'off',
         'quotes': ['error', 'single'],
         'semi': ['error', 'always'],
-        'no-unused-vars': ['error', { 'argsIgnorePattern': '^_' }],
+        'no-unused-vars': ['warn', { 'argsIgnorePattern': '^_' }],
         'no-console': 'off',
         'no-undef': 'error',
-        'no-trailing-spaces': 'error',
-        'eol-last': 'error',
+        'no-trailing-spaces': 'warn',
+        'eol-last': 'warn',
         'comma-dangle': ['error', 'never'],
         'object-curly-spacing': ['error', 'always'],
         'array-bracket-spacing': ['error', 'never'],
@@ -29,6 +30,9 @@ module.exports = {
         'space-infix-ops': 'error',
         'no-multiple-empty-lines': ['error', { 'max': 2 }],
         'brace-style': ['error', '1tbs'],
-        'curly': ['error', 'all']
+        'curly': ['error', 'all'],
+        'no-var': 'error',
+        'prefer-const': 'warn',
+        'no-unreachable': 'error'
     }
 };

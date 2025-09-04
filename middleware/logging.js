@@ -11,20 +11,20 @@ class SecurityAlertSystem {
         this.blockThreshold = 10; // Block after 10 suspicious activities
         this.timeWindow = 15 * 60 * 1000; // 15 minutes
     }
-    
+
     async recordSuspiciousActivity(ip, activity, details = {}) {
         const now = Date.now();
         const ipData = this.suspiciousIPs.get(ip) || { count: 0, lastAttempt: 0, blocked: false };
-        
+
         // Reset count if outside time window
         if (now - ipData.lastAttempt > this.timeWindow) {
             ipData.count = 0;
             ipData.blocked = false;
         }
-        
+
         ipData.count++;
         ipData.lastAttempt = now;
-        
+
         // Log the activity
         securityLogger.warn('Suspicious Activity Detected', {
             ip,
@@ -33,23 +33,23 @@ class SecurityAlertSystem {
             details,
             timestamp: new Date().toISOString()
         });
-        
+
         // Block IP if block threshold reached
         if (ipData.count >= this.blockThreshold) {
             ipData.blocked = true;
             this.blockedIPs.add(ip);
         }
-        
+
         this.suspiciousIPs.set(ip, ipData);
         return ipData.blocked;
     }
-    
+
     isBlocked(ip) {
         const ipData = this.suspiciousIPs.get(ip);
         if (!ipData) {
             return false;
         }
-        
+
         const now = Date.now();
         if (now - ipData.lastAttempt > this.timeWindow) {
             ipData.blocked = false;
@@ -57,7 +57,7 @@ class SecurityAlertSystem {
             this.blockedIPs.delete(ip);
             return false;
         }
-        
+
         return ipData.blocked;
     }
 }
@@ -95,7 +95,7 @@ const securityAlertSystem = new SecurityAlertSystem();
 // IP Blocking Middleware
 const ipBlockingMiddleware = (req, res, next) => {
     const clientIP = req.ip;
-    
+
     if (securityAlertSystem.isBlocked(clientIP)) {
         securityLogger.warn('Blocked IP Access Attempt', {
             ip: clientIP,
@@ -103,13 +103,13 @@ const ipBlockingMiddleware = (req, res, next) => {
             userAgent: req.get('User-Agent'),
             timestamp: new Date().toISOString()
         });
-        
+
         return res.status(403).json({
             message: 'Access denied',
             success: false
         });
     }
-    
+
     next();
 };
 
@@ -124,9 +124,9 @@ const logSecurityEvent = async (eventType, req, additionalData = {}) => {
         timestamp: new Date().toISOString(),
         ...additionalData
     };
-    
+
     securityLogger.warn('Security Event', eventData);
-    
+
     // Record suspicious activity for certain event types
     const suspiciousEvents = ['XSS_ATTEMPT', 'SQL_INJECTION', 'VALIDATION_FAILED', 'LOGIN_FAILED'];
     if (suspiciousEvents.includes(eventType)) {

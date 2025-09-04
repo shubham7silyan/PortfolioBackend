@@ -10,15 +10,15 @@ const immutableLogSchema = new mongoose.Schema({
     level: { type: String, required: true, immutable: true },
     message: { type: String, required: true, immutable: true },
     metadata: { type: Object, immutable: true },
-    
+
     // Cryptographic integrity
     hash: { type: String, required: true, immutable: true },
     previousHash: { type: String, immutable: true },
     signature: { type: String, required: true, immutable: true },
-    
+
     // Blockchain-like chain
     blockNumber: { type: Number, required: true, immutable: true },
-    
+
     // Prevent any updates
     __v: { type: Number, select: false }
 }, {
@@ -59,7 +59,7 @@ class ImmutableLogger {
                 this.lastHash = '0';
                 return;
             }
-            
+
             const lastLog = await ImmutableLog.findOne().sort({ blockNumber: -1 });
             if (lastLog) {
                 this.lastBlockNumber = lastLog.blockNumber;
@@ -278,7 +278,7 @@ class EnhancedSecurityLogger {
         try {
             // Log to immutable chain
             const logId = await this.immutableLogger.appendLog(level, message, enhancedMetadata);
-            
+
             // Log to off-site services
             await this.offSiteLogger.logToOffSite(level, message, {
                 ...enhancedMetadata,

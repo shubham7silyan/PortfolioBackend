@@ -23,7 +23,7 @@ class PerformanceTester {
 
     async measureEndpoint(method, endpoint, data = null, headers = {}) {
         const start = performance.now();
-        
+
         try {
             const config = {
                 method,
@@ -37,7 +37,7 @@ class PerformanceTester {
 
             const response = await axios(config);
             const end = performance.now();
-            
+
             return {
                 success: true,
                 duration: Math.round(end - start),
@@ -61,10 +61,10 @@ class PerformanceTester {
 
         // Test cache miss vs hit
         console.log('1. Cache Miss vs Hit Test:');
-        
+
         const miss = await this.measureEndpoint('GET', '/admin/contacts');
         console.log(`   First request (cache miss): ${miss.duration}ms`);
-        
+
         const hit = await this.measureEndpoint('GET', '/admin/contacts');
         console.log(`   Second request (cache hit): ${hit.duration}ms`);
         console.log(`   Performance improvement: ${Math.round((miss.duration - hit.duration) / miss.duration * 100)}%`);
@@ -111,7 +111,7 @@ class PerformanceTester {
             await this.measureEndpoint('GET', endpoint);
         }
         const totalSequential = performance.now() - sequentialStart;
-        
+
         console.log(`   Sequential would take: ${Math.round(totalSequential)}ms`);
         console.log(`   Performance gain: ${Math.round((totalSequential - totalParallel) / totalSequential * 100)}%`);
     }
@@ -121,7 +121,7 @@ class PerformanceTester {
 
         const result = await this.measureEndpoint('GET', '/admin/contacts?page=1&limit=50');
         const contentEncoding = result.headers?.['content-encoding'];
-        
+
         console.log(`   Response size: ${result.size} bytes`);
         console.log(`   Compression: ${contentEncoding || 'none'}`);
         console.log(`   Response time: ${result.duration}ms`);
@@ -136,7 +136,7 @@ class PerformanceTester {
             await this.testDatabaseOptimization();
             await this.testParallelRequests();
             await this.testCompressionBenefit();
-            
+
             console.log('\n✅ Performance testing completed!');
             console.log('\n📈 Optimization Summary:');
             console.log('   - Redis/Memory caching: Enabled');
@@ -154,10 +154,10 @@ class PerformanceTester {
 // Load testing function
 async function loadTest(concurrency = 10, requests = 100) {
     console.log(`\n🔥 Load Testing: ${concurrency} concurrent users, ${requests} requests each\n`);
-    
+
     const tester = new PerformanceTester();
     await tester.login();
-    
+
     const workers = Array(concurrency).fill().map(async (_, i) => {
         const results = [];
         for (let j = 0; j < requests / concurrency; j++) {
@@ -170,13 +170,13 @@ async function loadTest(concurrency = 10, requests = 100) {
     const start = performance.now();
     const allResults = await Promise.all(workers);
     const totalTime = performance.now() - start;
-    
+
     const durations = allResults.flat();
     const avgDuration = durations.reduce((a, b) => a + b, 0) / durations.length;
     const maxDuration = Math.max(...durations);
     const minDuration = Math.min(...durations);
-    
-    console.log(`📊 Load Test Results:`);
+
+    console.log('📊 Load Test Results:');
     console.log(`   Total requests: ${durations.length}`);
     console.log(`   Total time: ${Math.round(totalTime)}ms`);
     console.log(`   Requests/second: ${Math.round(durations.length / (totalTime / 1000))}`);

@@ -3,7 +3,7 @@ const { cacheManager, asyncQueue } = require('./performance');
 
 // Optimized Security Middleware - Apply rate limiting only to critical routes
 class OptimizedSecurity {
-    static createSmartRateLimit(windowMs = 15 * 60 * 1000, max = 100, message = "Too many requests") {
+    static createSmartRateLimit(windowMs = 15 * 60 * 1000, max = 100, message = 'Too many requests') {
         return rateLimit({
             windowMs,
             max,
@@ -21,13 +21,13 @@ class OptimizedSecurity {
     }
 
     // Critical route rate limiting (login, contact)
-    static criticalLimiter = this.createSmartRateLimit(15 * 60 * 1000, 5, "Too many attempts, please try again later");
-    
+    static criticalLimiter = this.createSmartRateLimit(15 * 60 * 1000, 5, 'Too many attempts, please try again later');
+
     // Contact form specific limiting
-    static contactLimiter = this.createSmartRateLimit(60 * 1000, 2, "Please wait before submitting another message");
-    
+    static contactLimiter = this.createSmartRateLimit(60 * 1000, 2, 'Please wait before submitting another message');
+
     // Admin route limiting (more permissive for authenticated users)
-    static adminLimiter = this.createSmartRateLimit(15 * 60 * 1000, 100, "Admin rate limit exceeded");
+    static adminLimiter = this.createSmartRateLimit(15 * 60 * 1000, 100, 'Admin rate limit exceeded');
 
     // Async logging middleware - don't block requests
     static asyncSecurityLogger(eventType) {
@@ -49,10 +49,10 @@ class OptimizedSecurity {
     // Optimized input validation - fail fast
     static fastValidation(req, res, next) {
         const { body } = req;
-        
+
         // Quick checks first
         if (!body || typeof body !== 'object') {
-            return res.status(400).json({ message: "Invalid request body", success: false });
+            return res.status(400).json({ message: 'Invalid request body', success: false });
         }
 
         // Check for obviously malicious patterns
@@ -63,7 +63,7 @@ class OptimizedSecurity {
         const bodyStr = JSON.stringify(body);
         for (const pattern of suspiciousPatterns) {
             if (pattern.test(bodyStr)) {
-                return res.status(400).json({ message: "Invalid content detected", success: false });
+                return res.status(400).json({ message: 'Invalid content detected', success: false });
             }
         }
 
@@ -74,8 +74,10 @@ class OptimizedSecurity {
     static optimizedCORS = {
         origin: (origin, callback) => {
             // Allow requests with no origin (mobile apps, Postman, etc.)
-            if (!origin) return callback(null, true);
-            
+            if (!origin) {
+                return callback(null, true);
+            }
+
             const allowedOrigins = [
                 process.env.FRONTEND_URL,
                 'http://localhost:3000',

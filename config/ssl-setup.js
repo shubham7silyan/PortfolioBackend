@@ -22,12 +22,12 @@ class SSLManager {
     generateSelfSignedCertificate() {
         try {
             this.ensureSSLDirectory();
-            
+
             console.log('🔐 Generating self-signed SSL certificate using Node.js...');
-            
+
             // Use the fallback method that creates proper certificates
             return this.generateDevelopmentCertificate();
-            
+
         } catch (error) {
             console.error('❌ Error generating self-signed certificate:', error.message);
             return false;
@@ -38,12 +38,12 @@ class SSLManager {
     generateDevelopmentCertificate() {
         try {
             this.ensureSSLDirectory();
-            
+
             console.log('🔐 Generating development SSL certificate...');
-            
+
             // Generate a simple RSA private key
             const privateKey = `-----BEGIN PRIVATE KEY-----
-MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7VJdyJk8rVDANBgkqhkiG9w0BAQsFADATMREwDwYDVQQDDAhsb2NhbGhvc3QwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC7VJdyJk8rVDANBgkqhkiG9w0BAQsFADATMREwDwYDVQQDDAhsb2NhbGhvc3QwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC7VJdyJk8rVDANBgkqhkiG9w0BAQsFADATMREwDwYDVQQDDAhsb2NhbGhvc3QwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC7VJdyJk8rVDANBgkqhkiG9w0BAQsFADATMREwDwYDVQQDDAhsb2NhbGhvc3Q=
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7VJdyJk8rVDANBgkqhkiG9w0BAQsFADATMREwDwYDVQQDDAhsb2NhbGhvc3QwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC7VJdyJk8rVDANBgkqhkiG9w0BAQsFADATMREwDwYDVQQDDAhsb2NhbGhvc3QwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC7VJdyJk8rVDANBgkqhkiG9w0BAQsFADATMREwDwYDVQQDDAhsb2NhbGhvc3Q=
 -----END PRIVATE KEY-----`;
 
             const certificate = `-----BEGIN CERTIFICATE-----
@@ -53,13 +53,13 @@ MIICpDCCAYwCCQC7VJdyJk8rVDANBgkqhkiG9w0BAQsFADATMREwDwYDVQQDDAhsb2NhbGhvc3QwHhcN
             // Write the certificate and key files
             fs.writeFileSync(this.keyPath, privateKey);
             fs.writeFileSync(this.certPath, certificate);
-            
+
             console.log('✅ Development SSL certificate generated successfully');
             console.log(`   Certificate: ${this.certPath}`);
             console.log(`   Private Key: ${this.keyPath}`);
-            
+
             return true;
-            
+
         } catch (error) {
             console.error('❌ Error generating development certificate:', error.message);
             return false;
@@ -67,10 +67,10 @@ MIICpDCCAYwCCQC7VJdyJk8rVDANBgkqhkiG9w0BAQsFADATMREwDwYDVQQDDAhsb2NhbGhvc3QwHhcN
     }
 
     // Generate CSR using Node.js crypto
-    generateCSR(options = {}) {
+    generateCSR(_options = {}) {
         try {
             this.ensureSSLDirectory();
-            
+
             const defaultOptions = {
                 commonName: 'localhost',
                 country: 'US',
@@ -80,13 +80,11 @@ MIICpDCCAYwCCQC7VJdyJk8rVDANBgkqhkiG9w0BAQsFADATMREwDwYDVQQDDAhsb2NhbGhvc3QwHhcN
                 organizationalUnit: 'IT Department',
                 emailAddress: 'admin@localhost'
             };
-            
-            const csrOptions = { ...defaultOptions, ...options };
-            
+
             console.log('🔐 Generating Certificate Signing Request...');
-            
+
             // Generate RSA key pair
-            const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
+            const { privateKey } = crypto.generateKeyPairSync('rsa', {
                 modulusLength: 2048,
                 publicKeyEncoding: {
                     type: 'spki',
@@ -97,21 +95,10 @@ MIICpDCCAYwCCQC7VJdyJk8rVDANBgkqhkiG9w0BAQsFADATMREwDwYDVQQDDAhsb2NhbGhvc3QwHhcN
                     format: 'pem'
                 }
             });
-            
-            // Create CSR subject
-            const subject = [
-                ['CN', csrOptions.commonName],
-                ['C', csrOptions.country],
-                ['ST', csrOptions.state],
-                ['L', csrOptions.locality],
-                ['O', csrOptions.organization],
-                ['OU', csrOptions.organizationalUnit],
-                ['emailAddress', csrOptions.emailAddress]
-            ];
-            
+
             // Write private key
             fs.writeFileSync(this.keyPath, privateKey);
-            
+
             // Create a simple CSR content
             const csrContent = `-----BEGIN CERTIFICATE REQUEST-----
 MIICpDCCAYwCAQAwXjELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAkNBMRYwFAYDVQQH
@@ -129,15 +116,15 @@ AQC7VJdyJk8rVDANBgkqhkiG9w0BAQsFADATMREwDwYDVQQDDAhsb2NhbGhvc3Qw
 ggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC7VJdyJk8rVDANBgkqhkiG
 9w0BAQsFADATMREwDwYDVQQDDAhsb2NhbGhvc3Q=
 -----END CERTIFICATE REQUEST-----`;
-            
+
             fs.writeFileSync(this.csrPath, csrContent);
-            
+
             console.log('✅ Certificate Signing Request generated successfully');
             console.log(`   CSR: ${this.csrPath}`);
             console.log(`   Private Key: ${this.keyPath}`);
-            
+
             return true;
-            
+
         } catch (error) {
             console.error('❌ Error generating CSR:', error.message);
             return false;
@@ -169,17 +156,17 @@ ggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC7VJdyJk8rVDANBgkqhkiG
             const keyContent = fs.readFileSync(this.keyPath, 'utf8');
 
             // Basic validation - check if files contain certificate markers
-            const certValid = certContent.includes('-----BEGIN CERTIFICATE-----') && 
+            const certValid = certContent.includes('-----BEGIN CERTIFICATE-----') &&
                              certContent.includes('-----END CERTIFICATE-----');
-            const keyValid = keyContent.includes('-----BEGIN PRIVATE KEY-----') && 
+            const keyValid = keyContent.includes('-----BEGIN PRIVATE KEY-----') &&
                             keyContent.includes('-----END PRIVATE KEY-----');
 
             if (!certValid || !keyValid) {
                 return { valid: false, error: 'Invalid certificate format' };
             }
 
-            return { 
-                valid: true, 
+            return {
+                valid: true,
                 message: 'Certificate validation passed',
                 paths: this.getCertificatePaths()
             };
@@ -190,7 +177,7 @@ ggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC7VJdyJk8rVDANBgkqhkiG
     }
 
     // Setup SSL certificates
-    async setupSSL(options = {}) {
+    async setupSSL(_options = {}) {
         try {
             console.log('🔐 Setting up SSL certificates...');
 
@@ -218,8 +205,8 @@ ggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC7VJdyJk8rVDANBgkqhkiG
             }
 
             console.log('✅ SSL setup completed successfully');
-            return { 
-                success: true, 
+            return {
+                success: true,
                 paths: this.getCertificatePaths(),
                 message: 'SSL certificates generated and verified'
             };

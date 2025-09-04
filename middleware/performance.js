@@ -56,7 +56,7 @@ class CacheManager {
 
     setupMemoryCache() {
         this.memoryCache = new Map();
-        
+
         // Cleanup memory cache every 5 minutes
         setInterval(() => {
             const now = Date.now();
@@ -116,8 +116,8 @@ class CacheManager {
     // Cache middleware factory
     cacheMiddleware(ttlSeconds = 60, keyGenerator = null) {
         return async (req, res, next) => {
-            const cacheKey = keyGenerator ? 
-                keyGenerator(req) : 
+            const cacheKey = keyGenerator ?
+                keyGenerator(req) :
                 `${req.method}:${req.originalUrl}:${req.user?.userId || 'anonymous'}`;
 
             try {
@@ -165,11 +165,11 @@ class PerformanceMonitor {
         res.on('finish', () => {
             const duration = Date.now() - start;
             const route = `${req.method} ${req.route?.path || req.path}`;
-            
+
             if (!this.metrics.responses.has(route)) {
                 this.metrics.responses.set(route, []);
             }
-            
+
             this.metrics.responses.get(route).push({
                 duration,
                 status: res.statusCode,
@@ -263,10 +263,12 @@ class AsyncQueue {
     }
 
     async processQueue() {
-        if (this.processing || this.queue.length === 0) return;
-        
+        if (this.processing || this.queue.length === 0) {
+            return;
+        }
+
         this.processing = true;
-        
+
         while (this.queue.length > 0) {
             const task = this.queue.shift();
             try {
@@ -275,7 +277,7 @@ class AsyncQueue {
                 console.error('Queue task failed:', error);
             }
         }
-        
+
         this.processing = false;
     }
 
@@ -300,20 +302,20 @@ class AsyncQueue {
 class ClusterManager {
     static setupCluster() {
         const numCPUs = os.cpus().length;
-        
+
         if (cluster.isMaster) {
             console.log(`🚀 Master process ${process.pid} starting ${numCPUs} workers`);
-            
+
             // Fork workers
             for (let i = 0; i < numCPUs; i++) {
                 cluster.fork();
             }
-            
+
             cluster.on('exit', (worker, code, signal) => {
                 console.log(`Worker ${worker.process.pid} died. Restarting...`);
                 cluster.fork();
             });
-            
+
             return false; // Don't start Express in master
         } else {
             console.log(`🔧 Worker ${process.pid} started`);

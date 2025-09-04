@@ -15,7 +15,7 @@ class SecurityTester {
         const nonce = crypto.randomBytes(16).toString('hex');
         const payload = `${method}|${path}|${JSON.stringify(body)}|${timestamp}|${nonce}`;
         const signature = crypto.createHmac('sha256', this.signingKey).update(payload).digest('hex');
-        
+
         return {
             'x-signature': signature,
             'x-timestamp': timestamp,
@@ -29,7 +29,7 @@ class SecurityTester {
         // Test 1: Rate Limiting
         console.log('1. Testing Rate Limiting...');
         try {
-            const promises = Array(20).fill().map(() => 
+            const promises = Array(20).fill().map(() =>
                 axios.post(`${this.baseURL}/contact`, {
                     FirstName: 'Test',
                     LastName: 'User',
@@ -37,7 +37,7 @@ class SecurityTester {
                     Message: 'Rate limit test'
                 })
             );
-            
+
             const results = await Promise.allSettled(promises);
             const blocked = results.filter(r => r.status === 'rejected' && r.reason.response?.status === 429);
             console.log(`   ✅ Rate limiting working: ${blocked.length}/20 requests blocked`);
@@ -48,7 +48,7 @@ class SecurityTester {
         // Test 2: XSS Protection
         console.log('2. Testing XSS Protection...');
         try {
-            const response = await axios.post(`${this.baseURL}/contact`, {
+            const _response = await axios.post(`${this.baseURL}/contact`, {
                 FirstName: '<script>alert("xss")</script>',
                 LastName: 'Test',
                 Email: 'test@example.com',
@@ -66,7 +66,7 @@ class SecurityTester {
         // Test 3: Email Validation
         console.log('3. Testing Email Validation...');
         try {
-            const response = await axios.post(`${this.baseURL}/contact`, {
+            const _response = await axios.post(`${this.baseURL}/contact`, {
                 FirstName: 'Test',
                 LastName: 'User',
                 Email: 'invalid-email',
@@ -90,7 +90,7 @@ class SecurityTester {
                 username: 'admin',
                 password: process.env.ADMIN_PASSWORD || 'admin123'
             });
-            
+
             if (response.data.success) {
                 this.accessToken = response.data.accessToken;
                 this.refreshToken = response.data.refreshToken;
@@ -123,7 +123,7 @@ class SecurityTester {
                 const response = await axios.post(`${this.baseURL}/admin/refresh`, {
                     refreshToken: this.refreshToken
                 });
-                
+
                 if (response.data.success) {
                     this.accessToken = response.data.accessToken;
                     this.refreshToken = response.data.refreshToken;
@@ -170,7 +170,7 @@ class SecurityTester {
                         'Authorization': `Bearer ${this.accessToken}`
                     }
                 });
-                
+
                 console.log('   ✅ System status accessible');
                 console.log(`   📊 Log integrity: ${response.data.security?.logIntegrity?.valid ? 'VALID' : 'INVALID'}`);
             } catch (error) {
@@ -197,11 +197,11 @@ class SecurityTester {
     async runAllTests() {
         console.log('🚀 Starting Comprehensive Security Testing...');
         console.log(`🎯 Target: ${this.baseURL}`);
-        
+
         await this.testBasicSecurity();
         await this.testAuthentication();
         await this.testAdvancedSecurity();
-        
+
         console.log('\n✅ Security testing completed!');
         console.log('\n📋 Summary:');
         console.log('   - Rate limiting: Tested');

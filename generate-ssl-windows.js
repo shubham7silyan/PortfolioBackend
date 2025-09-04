@@ -23,7 +23,7 @@ class WindowsSSLGenerator {
 
             // Generate a key pair
             const keys = forge.pki.rsa.generateKeyPair(2048);
-            
+
             // Create a certificate
             const cert = forge.pki.createCertificate();
             cert.publicKey = keys.publicKey;
@@ -159,12 +159,12 @@ class WindowsSSLGenerator {
 // Auto-run if called directly
 if (require.main === module) {
     const generator = new WindowsSSLGenerator();
-    
+
     console.log('🔐 Windows SSL Certificate Generator');
     console.log('==================================\n');
-    
+
     const paths = generator.getCertificatePaths();
-    
+
     if (paths.exists) {
         console.log('📋 Existing certificates found');
         generator.verifyCertificate();

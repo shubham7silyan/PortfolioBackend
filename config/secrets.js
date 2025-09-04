@@ -16,7 +16,7 @@ class VaultManager {
     async getSecret(path) {
         const cacheKey = path;
         const cached = this.secretCache.get(cacheKey);
-        
+
         if (cached && Date.now() - cached.timestamp < this.cacheExpiry) {
             return cached.data;
         }
@@ -24,12 +24,12 @@ class VaultManager {
         try {
             const result = await this.vault.read(path);
             const secretData = result.data.data || result.data;
-            
+
             this.secretCache.set(cacheKey, {
                 data: secretData,
                 timestamp: Date.now()
             });
-            
+
             return secretData;
         } catch (error) {
             console.error('❌ Vault secret retrieval failed:', error);
@@ -63,7 +63,7 @@ class AWSSecretsManager {
 
     async getSecret(secretName) {
         const cached = this.secretCache.get(secretName);
-        
+
         if (cached && Date.now() - cached.timestamp < this.cacheExpiry) {
             return cached.data;
         }
@@ -72,14 +72,14 @@ class AWSSecretsManager {
             const result = await this.secretsManager.getSecretValue({
                 SecretId: secretName
             }).promise();
-            
+
             const secretData = JSON.parse(result.SecretString);
-            
+
             this.secretCache.set(secretName, {
                 data: secretData,
                 timestamp: Date.now()
             });
-            
+
             return secretData;
         } catch (error) {
             console.error('❌ AWS Secrets Manager retrieval failed:', error);
@@ -93,7 +93,7 @@ class AWSSecretsManager {
                 SecretId: secretName,
                 SecretString: JSON.stringify(newSecret)
             }).promise();
-            
+
             this.secretCache.delete(secretName); // Invalidate cache
             console.log(`✅ AWS Secret rotated: ${secretName}`);
         } catch (error) {
@@ -107,7 +107,7 @@ class AWSSecretsManager {
 class SecretsManager {
     constructor() {
         this.provider = process.env.SECRETS_PROVIDER || 'vault'; // 'vault' or 'aws'
-        
+
         if (this.provider === 'vault') {
             this.manager = new VaultManager();
         } else if (this.provider === 'aws') {
@@ -149,7 +149,7 @@ class SecretsManager {
     // Automatic secret rotation (for production)
     async rotateAllSecrets() {
         const crypto = require('crypto');
-        
+
         const newSecrets = {
             JWT_ACCESS_SECRET: crypto.randomBytes(32).toString('hex'),
             JWT_REFRESH_SECRET: crypto.randomBytes(32).toString('hex'),
@@ -162,7 +162,7 @@ class SecretsManager {
             } else {
                 await this.rotateSecret('portfolio/app-secrets', newSecrets);
             }
-            
+
             console.log('✅ All secrets rotated successfully');
             return newSecrets;
         } catch (error) {

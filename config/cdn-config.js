@@ -39,14 +39,14 @@ class CDNConfig {
     static getCloudflareConfig() {
         return {
             caching: {
-                "*.css": "1y",
-                "*.js": "1y", 
-                "*.png": "1y",
-                "*.jpg": "1y",
-                "*.webp": "1y",
-                "*.woff2": "1y",
-                "/api/*": "0s", // Don't cache API responses
-                "/admin/*": "0s" // Don't cache admin routes
+                '*.css': '1y',
+                '*.js': '1y',
+                '*.png': '1y',
+                '*.jpg': '1y',
+                '*.webp': '1y',
+                '*.woff2': '1y',
+                '/api/*': '0s', // Don't cache API responses
+                '/admin/*': '0s' // Don't cache admin routes
             },
             compression: {
                 level: 6,
@@ -58,7 +58,7 @@ class CDNConfig {
                 html: true
             },
             security: {
-                ssl: "strict",
+                ssl: 'strict',
                 hsts: true,
                 waf: true
             }

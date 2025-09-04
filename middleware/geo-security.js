@@ -1,6 +1,6 @@
 const geoip = require('geoip-lite');
 const crypto = require('crypto');
-const { ImmutableLogger, OffSiteLogger, EnhancedSecurityLogger } = require('./immutable-logging');
+const { AdminUser } = require('./logging');
 
 // Geo-IP Security Manager
 class GeoSecurityManager {
@@ -12,7 +12,7 @@ class GeoSecurityManager {
 
     checkGeoLocation(ip) {
         const geo = geoip.lookup(ip);
-        
+
         if (!geo) {
             return {
                 allowed: false,
@@ -22,7 +22,7 @@ class GeoSecurityManager {
         }
 
         const country = geo.country;
-        
+
         // Check blocked countries first
         if (this.blockedCountries.includes(country)) {
             return {
@@ -56,7 +56,7 @@ class GeoSecurityManager {
         const geoCheck = this.checkGeoLocation(clientIP);
 
         if (!geoCheck.allowed) {
-            console.log(`🌍 Geo-blocked access attempt:`, {
+            console.log('🌍 Geo-blocked access attempt:', {
                 ip: clientIP,
                 country: geoCheck.country,
                 reason: geoCheck.reason,
@@ -65,7 +65,7 @@ class GeoSecurityManager {
             });
 
             return res.status(403).json({
-                message: "Access denied from your location",
+                message: 'Access denied from your location',
                 success: false,
                 code: 'GEO_BLOCKED'
             });
@@ -73,7 +73,7 @@ class GeoSecurityManager {
 
         // Log suspicious countries but allow access
         if (geoCheck.suspicious) {
-            console.log(`🚨 Suspicious country access:`, {
+            console.log('🚨 Suspicious country access:', {
                 ip: clientIP,
                 country: geoCheck.country,
                 path: req.path,
@@ -104,7 +104,7 @@ class RequestSigner {
 
         if (!signature || !timestamp || !nonce) {
             return res.status(401).json({
-                message: "Request signature required",
+                message: 'Request signature required',
                 success: false,
                 required: ['x-signature', 'x-timestamp', 'x-nonce']
             });
@@ -114,10 +114,10 @@ class RequestSigner {
         const now = Date.now();
         const requestTime = parseInt(timestamp);
         const timeDiff = Math.abs(now - requestTime);
-        
+
         if (timeDiff > 300000) { // 5 minutes tolerance
             return res.status(401).json({
-                message: "Request timestamp expired",
+                message: 'Request timestamp expired',
                 success: false
             });
         }
@@ -132,7 +132,7 @@ class RequestSigner {
         );
 
         if (signature !== expectedSignature) {
-            console.log(`🚨 Invalid request signature:`, {
+            console.log('🚨 Invalid request signature:', {
                 ip: req.ip,
                 path: req.path,
                 expected: expectedSignature,
@@ -140,7 +140,7 @@ class RequestSigner {
             });
 
             return res.status(401).json({
-                message: "Invalid request signature",
+                message: 'Invalid request signature',
                 success: false
             });
         }
@@ -153,10 +153,10 @@ class RequestSigner {
     static generateClientSignature(method, path, body, signingKey) {
         const timestamp = Date.now().toString();
         const nonce = crypto.randomBytes(16).toString('hex');
-        
+
         const payload = `${method}|${path}|${JSON.stringify(body)}|${timestamp}|${nonce}`;
         const signature = crypto.createHmac('sha256', signingKey).update(payload).digest('hex');
-        
+
         return {
             signature,
             timestamp,
@@ -175,9 +175,9 @@ class TokenRateLimiter {
     checkUserLimit(userId, maxRequests = 50, windowMs = 15 * 60 * 1000) {
         const now = Date.now();
         const windowStart = now - windowMs;
-        
-        let userData = this.userLimits.get(userId) || { requests: [], blocked: false, blockUntil: 0 };
-        
+
+        const userData = this.userLimits.get(userId) || { requests: [], blocked: false, blockUntil: 0 };
+
         // Check if user is blocked
         if (userData.blocked && userData.blockUntil > now) {
             return {
@@ -185,27 +185,27 @@ class TokenRateLimiter {
                 retryAfter: Math.ceil((userData.blockUntil - now) / 1000)
             };
         }
-        
+
         // Remove old requests
         userData.requests = userData.requests.filter(timestamp => timestamp > windowStart);
-        
+
         // Check limit
         if (userData.requests.length >= maxRequests) {
             userData.blocked = true;
             userData.blockUntil = now + windowMs;
             this.userLimits.set(userId, userData);
-            
+
             return {
                 allowed: false,
                 retryAfter: Math.ceil(windowMs / 1000)
             };
         }
-        
+
         // Add current request
         userData.requests.push(now);
         userData.blocked = false;
         this.userLimits.set(userId, userData);
-        
+
         return {
             allowed: true,
             remaining: maxRequests - userData.requests.length
@@ -219,10 +219,10 @@ class TokenRateLimiter {
             }
 
             const result = this.checkUserLimit(req.user.userId, maxRequests, windowMs);
-            
+
             if (!result.allowed) {
                 return res.status(429).json({
-                    message: "User rate limit exceeded",
+                    message: 'User rate limit exceeded',
                     success: false,
                     retryAfter: result.retryAfter,
                     type: 'USER_RATE_LIMIT'
@@ -259,7 +259,7 @@ class SessionSecurityManager {
 
         // Add to user's active sessions
         user.activeSessions.push(sessionData);
-        
+
         // Keep only last 10 sessions
         if (user.activeSessions.length > 10) {
             user.activeSessions = user.activeSessions.slice(-10);
@@ -271,14 +271,18 @@ class SessionSecurityManager {
 
     static async validateSession(userId, tokenId, currentIP) {
         const user = await AdminUser.findById(userId);
-        if (!user) return false;
+        if (!user) {
+            return false;
+        }
 
         const session = user.activeSessions.find(s => s.tokenId === tokenId);
-        if (!session) return false;
+        if (!session) {
+            return false;
+        }
 
         // Check if IP changed (potential session hijacking)
         if (session.ip !== currentIP) {
-            console.log(`🚨 Session IP mismatch:`, {
+            console.log('🚨 Session IP mismatch:', {
                 userId,
                 originalIP: session.ip,
                 currentIP,
@@ -292,7 +296,9 @@ class SessionSecurityManager {
 
     static async revokeSession(userId, tokenId) {
         const user = await AdminUser.findById(userId);
-        if (!user) return;
+        if (!user) {
+            return;
+        }
 
         user.activeSessions = user.activeSessions.filter(s => s.tokenId !== tokenId);
         await user.save();
